@@ -39,6 +39,21 @@
     localStorage.setItem(scheduleStorageKey, JSON.stringify(schedule));
   }
 
+  function dedupeSessions(sessions) {
+    const seen = new Set();
+
+    return sessions
+      .filter((session) => {
+        const key = `${session.start}-${session.end}`;
+        if (seen.has(key)) {
+          return false;
+        }
+        seen.add(key);
+        return true;
+      })
+      .sort((a, b) => a.start.localeCompare(b.start));
+  }
+
   function groupRowsByDate(rows) {
     return rows.reduce((accumulator, row) => {
       const dateKey = row.session_date;
@@ -52,6 +67,7 @@
         end: row.end_time,
         label: row.label,
       });
+      accumulator[dateKey] = dedupeSessions(accumulator[dateKey]);
       return accumulator;
     }, {});
   }
@@ -69,16 +85,18 @@
         throw error;
       }
 
-      return (data || []).map((row) => ({
-        id: row.id,
-        start: row.start_time,
-        end: row.end_time,
-        label: row.label,
-      }));
+      return dedupeSessions(
+        (data || []).map((row) => ({
+          id: row.id,
+          start: row.start_time,
+          end: row.end_time,
+          label: row.label,
+        }))
+      );
     }
 
     const schedule = loadLocalSchedule();
-    return schedule[dateKey] || [];
+    return dedupeSessions(schedule[dateKey] || []);
   }
 
   async function getSlotsForRange(startDate, endDate) {
@@ -103,7 +121,7 @@
     const filtered = {};
     Object.keys(schedule).forEach((dateKey) => {
       if (dateKey >= startDate && dateKey <= endDate) {
-        filtered[dateKey] = schedule[dateKey];
+        filtered[dateKey] = dedupeSessions(schedule[dateKey]);
       }
     });
     return filtered;
