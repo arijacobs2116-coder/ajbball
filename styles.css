@@ -810,10 +810,6 @@ textarea {
     grid-template-columns: 1fr;
   }
 
-  .booking-layout > .booking-form {
-    order: -1;
-  }
-
   .slots-header {
     display: grid;
     gap: 6px;
