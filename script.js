@@ -13,6 +13,7 @@ const bookingSummary = document.getElementById("bookingSummary");
 const formNote = document.getElementById("formNote");
 
 let selectedSlot = "";
+let lastRenderedDate = "";
 
 function formatDateLabel(dateString) {
   const date = new Date(`${dateString}T12:00:00`);
@@ -43,6 +44,7 @@ async function renderSlots() {
   const dateValue = sessionDateInput.value;
   slotGrid.innerHTML = "";
   selectedSlot = "";
+  lastRenderedDate = dateValue;
   updateSummary();
 
   if (!dateValue) {
@@ -85,6 +87,14 @@ async function renderSlots() {
     });
     slotGrid.appendChild(button);
   });
+}
+
+function refreshSlotsIfNeeded() {
+  if (!sessionDateInput.value) {
+    return;
+  }
+
+  void renderSlots();
 }
 
 function getTomorrowDate() {
@@ -137,5 +147,11 @@ sessionDateInput.addEventListener("change", () => {
   void renderSlots();
 });
 sessionTypeSelect.addEventListener("change", updateSummary);
+window.addEventListener("focus", refreshSlotsIfNeeded);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    refreshSlotsIfNeeded();
+  }
+});
 
 initializeDateInput();
