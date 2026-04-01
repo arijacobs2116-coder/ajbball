@@ -237,14 +237,64 @@ async function renderWeekSchedule() {
       const details = document.createElement("div");
       details.className = "week-day-details";
 
-      const sessionMarkup =
-        sessions.length > 0
-          ? `<div class="session-pill-row">${sessions
-              .map((session) => `<span class="session-pill">${session.label}</span>`)
-              .join("")}</div>`
-          : '<p class="day-empty">No availability posted.</p>';
+      const heading = document.createElement("div");
+      heading.className = "week-day-heading";
+      heading.innerHTML = `<strong>${fullLabel}</strong><span>${
+        sessions.length === 0
+          ? "No availability posted"
+          : `${sessions.length} open slot${sessions.length === 1 ? "" : "s"}`
+      }</span>`;
+      details.appendChild(heading);
 
-      details.innerHTML = `<strong>${fullLabel}</strong>${sessionMarkup}`;
+      if (sessions.length > 0) {
+        const sessionList = document.createElement("div");
+        sessionList.className = "slot-checklist";
+
+        sessions.forEach((session) => {
+          const label = document.createElement("label");
+          label.className = "slot-check-item";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.className = "slot-check-input";
+          checkbox.addEventListener("change", async () => {
+            checkbox.disabled = true;
+            try {
+              await window.scheduleStore.clearSlot(
+                dateKey,
+                {
+                  start: session.start,
+                  end: session.end,
+                  label: session.label,
+                },
+                adminSessionPasscode
+              );
+              adminStatus.textContent = `${session.label} removed from ${fullLabel}.`;
+              await renderWeekSchedule();
+            } catch (error) {
+              checkbox.disabled = false;
+              checkbox.checked = false;
+              adminStatus.textContent =
+                "Could not update that slot. Check your setup and try again.";
+            }
+          });
+
+          const copy = document.createElement("div");
+          copy.className = "slot-check-copy";
+          copy.innerHTML = `<strong>${session.label}</strong><span>Check if this time was taken</span>`;
+
+          label.appendChild(checkbox);
+          label.appendChild(copy);
+          sessionList.appendChild(label);
+        });
+
+        details.appendChild(sessionList);
+      } else {
+        const empty = document.createElement("p");
+        empty.className = "day-empty";
+        empty.textContent = "No availability posted.";
+        details.appendChild(empty);
+      }
 
       const clearButton = document.createElement("button");
       clearButton.type = "button";

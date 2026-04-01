@@ -187,6 +187,30 @@
     return { success: true };
   }
 
+  async function clearSlot(dateKey, session, passcode) {
+    if (isSupabaseEnabled()) {
+      return invokeAvailabilityFunction({
+        action: "clear_slot",
+        passcode,
+        date: dateKey,
+        session,
+      });
+    }
+
+    const schedule = loadLocalSchedule();
+    const existingSessions = schedule[dateKey] || [];
+    schedule[dateKey] = existingSessions.filter(
+      (item) => !(item.start === session.start && item.end === session.end)
+    );
+
+    if (schedule[dateKey].length === 0) {
+      delete schedule[dateKey];
+    }
+
+    saveLocalSchedule(schedule);
+    return { success: true };
+  }
+
   async function validatePasscode(passcode) {
     if (isSupabaseEnabled()) {
       return invokeAvailabilityFunction({
@@ -205,6 +229,7 @@
     addSlotsToDates,
     clearWeek,
     clearDate,
+    clearSlot,
     validatePasscode,
   };
 })();
