@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 type RequestBody = {
-  action: "upsert_dates" | "clear_range" | "clear_date";
+  action: "validate_passcode" | "upsert_dates" | "clear_range" | "clear_date";
   passcode: string;
   dates?: string[];
   date?: string;
@@ -40,6 +40,13 @@ Deno.serve(async (request) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    if (body.action === "validate_passcode") {
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     if (body.action === "upsert_dates") {
       const rows =

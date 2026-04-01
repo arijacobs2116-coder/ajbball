@@ -1,4 +1,3 @@
-const adminPasscode = "ari";
 const weekdays = [
   { key: 0, label: "Mon" },
   { key: 1, label: "Tue" },
@@ -27,6 +26,7 @@ const adminStatus = document.getElementById("adminStatus");
 
 let isUnlocked = false;
 let selectedWeekdays = new Set([0, 1, 2, 3, 4]);
+let adminSessionPasscode = "";
 
 function getTomorrowDate() {
   const date = new Date();
@@ -176,7 +176,7 @@ async function renderWeekSchedule() {
       clearButton.className = "mini-button";
       clearButton.textContent = "Clear";
       clearButton.addEventListener("click", async () => {
-        await window.scheduleStore.clearDate(dateKey, adminPasscode);
+        await window.scheduleStore.clearDate(dateKey, adminSessionPasscode);
         adminStatus.textContent = `Cleared ${formatDateLabel(dateKey)}.`;
         await renderSelectedWeekSessions();
         await renderWeekSchedule();
@@ -221,7 +221,11 @@ async function addSessionToWeek() {
     .map(({ dateKey }) => dateKey);
 
   try {
-    await window.scheduleStore.addSlotsToDates(dates, session, adminPasscode);
+    await window.scheduleStore.addSlotsToDates(
+      dates,
+      session,
+      adminSessionPasscode
+    );
     adminStatus.textContent = `Added ${session.label} to ${dates.length} day(s) this week.`;
     await renderSelectedWeekSessions();
     await renderWeekSchedule();
@@ -241,7 +245,11 @@ async function clearSelectedWeek() {
   const endDate = weekDates[weekDates.length - 1].dateKey;
 
   try {
-    await window.scheduleStore.clearWeek(startDate, endDate, adminPasscode);
+    await window.scheduleStore.clearWeek(
+      startDate,
+      endDate,
+      adminSessionPasscode
+    );
     adminStatus.textContent = "Cleared all availability for this week.";
     await renderSelectedWeekSessions();
     await renderWeekSchedule();
@@ -269,7 +277,7 @@ async function loadSampleWeek() {
           end,
           label: createSessionLabel(start, end),
         },
-        adminPasscode
+        adminSessionPasscode
       );
     }
 
@@ -291,10 +299,25 @@ function initializeAdmin() {
   void renderWeekSchedule();
 }
 
-function unlockAdmin() {
-  if (adminPasswordInput.value !== adminPasscode) {
-    gateStatus.textContent = "Incorrect passcode.";
-    adminPasswordInput.value = "";
+async function unlockAdmin() {
+  const enteredPasscode = adminPasswordInput.value.trim();
+
+  if (!enteredPasscode) {
+    gateStatus.textContent = "Enter your passcode.";
+    return;
+  }
+
+  gateStatus.textContent = "Checking passcode...";
+
+  try {
+    const result = await window.scheduleStore.validatePasscode(enteredPasscode);
+    if (!result || result.success !== true) {
+      gateStatus.textContent = "Incorrect passcode.";
+      adminPasswordInput.value = "";
+      return;
+    }
+  } catch (error) {
+    gateStatus.textContent = "Could not verify passcode. Try again.";
     return;
   }
 
@@ -303,6 +326,7 @@ function unlockAdmin() {
     isUnlocked = true;
   }
 
+  adminSessionPasscode = enteredPasscode;
   gateStatus.textContent = "";
   adminGate.hidden = true;
   adminContent.hidden = false;
@@ -324,6 +348,6 @@ weekStartInput.addEventListener("change", () => {
 unlockButton.addEventListener("click", unlockAdmin);
 adminPasswordInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
-    unlockAdmin();
+    void unlockAdmin();
   }
 });

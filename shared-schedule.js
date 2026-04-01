@@ -187,6 +187,17 @@
     return { success: true };
   }
 
+  async function validatePasscode(passcode) {
+    if (isSupabaseEnabled()) {
+      return invokeAvailabilityFunction({
+        action: "validate_passcode",
+        passcode,
+      });
+    }
+
+    return { success: false };
+  }
+
   window.scheduleStore = {
     isSupabaseEnabled,
     getSlotsForDate,
@@ -194,5 +205,6 @@
     addSlotsToDates,
     clearWeek,
     clearDate,
+    validatePasscode,
   };
 })();
