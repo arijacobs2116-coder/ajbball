@@ -7,7 +7,12 @@ const corsHeaders = {
 };
 
 type RequestBody = {
-  action: "validate_passcode" | "upsert_dates" | "clear_range" | "clear_date";
+  action:
+    | "validate_passcode"
+    | "upsert_dates"
+    | "clear_range"
+    | "clear_date"
+    | "clear_slot";
   passcode: string;
   dates?: string[];
   date?: string;
@@ -83,6 +88,19 @@ Deno.serve(async (request) => {
         .from("availability_slots")
         .delete()
         .eq("session_date", body.date ?? "");
+
+      if (error) {
+        throw error;
+      }
+    }
+
+    if (body.action === "clear_slot") {
+      const { error } = await supabase
+        .from("availability_slots")
+        .delete()
+        .eq("session_date", body.date ?? "")
+        .eq("start_time", body.session?.start ?? "")
+        .eq("end_time", body.session?.end ?? "");
 
       if (error) {
         throw error;

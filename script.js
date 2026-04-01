@@ -1,6 +1,7 @@
 const businessConfig = {
   businessName: "AJ's Basketball Training",
-  phoneNumber: "9732805131",
+  phoneNumber: "9732008228",
+  firstAvailableDate: "2026-05-25",
 };
 
 const sessionDateInput = document.getElementById("sessionDate");
@@ -12,6 +13,7 @@ const bookingSummary = document.getElementById("bookingSummary");
 const formNote = document.getElementById("formNote");
 
 let selectedSlot = "";
+let lastRenderedDate = "";
 
 function formatDateLabel(dateString) {
   const date = new Date(`${dateString}T12:00:00`);
@@ -42,6 +44,7 @@ async function renderSlots() {
   const dateValue = sessionDateInput.value;
   slotGrid.innerHTML = "";
   selectedSlot = "";
+  lastRenderedDate = dateValue;
   updateSummary();
 
   if (!dateValue) {
@@ -86,10 +89,16 @@ async function renderSlots() {
   });
 }
 
+function refreshSlotsIfNeeded() {
+  if (!sessionDateInput.value) {
+    return;
+  }
+
+  void renderSlots();
+}
+
 function getTomorrowDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  return date.toISOString().split("T")[0];
+  return businessConfig.firstAvailableDate;
 }
 
 function initializeDateInput() {
@@ -138,5 +147,11 @@ sessionDateInput.addEventListener("change", () => {
   void renderSlots();
 });
 sessionTypeSelect.addEventListener("change", updateSummary);
+window.addEventListener("focus", refreshSlotsIfNeeded);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
+    refreshSlotsIfNeeded();
+  }
+});
 
 initializeDateInput();

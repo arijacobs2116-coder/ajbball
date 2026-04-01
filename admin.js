@@ -1,3 +1,13 @@
+const adminConfig = {
+  firstAvailableDate: "2026-05-25",
+  presetSlots: [
+    ["16:00", "17:00"],
+    ["17:30", "18:30"],
+    ["19:00", "20:00"],
+    ["20:30", "21:30"],
+  ],
+};
+
 const weekdays = [
   { key: 0, label: "Mon" },
   { key: 1, label: "Tue" },
@@ -14,11 +24,19 @@ const adminPasswordInput = document.getElementById("adminPassword");
 const unlockButton = document.getElementById("unlockButton");
 const gateStatus = document.getElementById("gateStatus");
 const weekStartInput = document.getElementById("weekStart");
+const weekRangeLabel = document.getElementById("weekRangeLabel");
 const weekdayPicker = document.getElementById("weekdayPicker");
+const presetGrid = document.getElementById("presetGrid");
+const weekdaysButton = document.getElementById("weekdaysButton");
+const allDaysButton = document.getElementById("allDaysButton");
+const clearSelectionButton = document.getElementById("clearSelectionButton");
+const prevWeekButton = document.getElementById("prevWeekButton");
+const todayWeekButton = document.getElementById("todayWeekButton");
+const nextWeekButton = document.getElementById("nextWeekButton");
 const startTimeInput = document.getElementById("startTime");
 const endTimeInput = document.getElementById("endTime");
 const applyWeekButton = document.getElementById("applyWeekButton");
-const copyWeekButton = document.getElementById("copyWeekButton");
+const clearSelectedButton = document.getElementById("clearSelectedButton");
 const clearWeekButton = document.getElementById("clearWeekButton");
 const selectedWeekSessions = document.getElementById("selectedWeekSessions");
 const weekScheduleList = document.getElementById("weekScheduleList");
@@ -28,15 +46,20 @@ let isUnlocked = false;
 let selectedWeekdays = new Set([0, 1, 2, 3, 4]);
 let adminSessionPasscode = "";
 
-function getTomorrowDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  return date.toISOString().split("T")[0];
+function getFirstAvailableDate() {
+  return adminConfig.firstAvailableDate;
 }
 
-function formatDateLabel(dateString) {
+function formatDateLabel(dateString, options = {}) {
   return new Intl.DateTimeFormat("en-US", {
-    weekday: "long",
+    weekday: options.includeWeekday === false ? undefined : "long",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(`${dateString}T12:00:00`));
+}
+
+function formatShortDateLabel(dateString) {
+  return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
   }).format(new Date(`${dateString}T12:00:00`));
@@ -77,67 +100,115 @@ function getWeekDates() {
       key: weekday.key,
       label: weekday.label,
       dateKey: getDateKey(date),
+      fullLabel: formatDateLabel(getDateKey(date)),
+      shortLabel: formatShortDateLabel(getDateKey(date)),
     };
   });
 }
 
-function renderWeekdayPicker() {
+function setWeekFromDate(dateString) {
+  weekStartInput.value = getDateKey(getWeekStartDate(dateString));
+  renderWeekRangeLabel();
+  renderDayPicker();
+  void renderSelectedSummary();
+  void renderWeekSchedule();
+}
+
+function moveWeek(offset) {
+  const weekStart = getWeekStartDate(weekStartInput.value);
+  weekStart.setDate(weekStart.getDate() + offset * 7);
+
+  const firstDate = new Date(`${getFirstAvailableDate()}T12:00:00`);
+  if (weekStart < firstDate) {
+    setWeekFromDate(getFirstAvailableDate());
+    return;
+  }
+
+  setWeekFromDate(getDateKey(weekStart));
+}
+
+function renderWeekRangeLabel() {
+  const weekDates = getWeekDates();
+  weekRangeLabel.textContent = `${formatShortDateLabel(
+    weekDates[0].dateKey
+  )} - ${formatShortDateLabel(weekDates[6].dateKey)}`;
+}
+
+function renderDayPicker() {
+  const weekDates = getWeekDates();
   weekdayPicker.innerHTML = "";
 
-  weekdays.forEach((weekday) => {
+  weekDates.forEach((day) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `weekday-button${
-      selectedWeekdays.has(weekday.key) ? " selected" : ""
+    button.className = `day-card${
+      selectedWeekdays.has(day.key) ? " selected" : ""
     }`;
-    button.textContent = weekday.label;
+    button.innerHTML = `
+      <span class="day-card-label">${day.label}</span>
+      <strong>${day.shortLabel}</strong>
+      <span class="day-card-meta">${
+        selectedWeekdays.has(day.key) ? "Selected" : "Tap to select"
+      }</span>
+    `;
     button.addEventListener("click", () => {
-      if (selectedWeekdays.has(weekday.key)) {
-        selectedWeekdays.delete(weekday.key);
+      if (selectedWeekdays.has(day.key)) {
+        selectedWeekdays.delete(day.key);
       } else {
-        selectedWeekdays.add(weekday.key);
+        selectedWeekdays.add(day.key);
       }
-      renderWeekdayPicker();
+      renderDayPicker();
+      renderSelectedSummary();
     });
     weekdayPicker.appendChild(button);
   });
 }
 
-async function renderSelectedWeekSessions() {
-  const weekDates = getWeekDates();
-  const startDate = weekDates[0].dateKey;
-  const endDate = weekDates[weekDates.length - 1].dateKey;
-  selectedWeekSessions.innerHTML = "";
+function renderPresetGrid() {
+  presetGrid.innerHTML = "";
 
-  try {
-    const schedule = await window.scheduleStore.getSlotsForRange(startDate, endDate);
-    const hasSessions = weekDates.some(
-      ({ dateKey }) => (schedule[dateKey] || []).length > 0
-    );
-
-    if (!hasSessions) {
-      selectedWeekSessions.innerHTML =
-        '<div class="empty-state">No sessions posted for this week yet.</div>';
-      return;
-    }
-
-    weekDates.forEach(({ dateKey, label }) => {
-      const sessions = schedule[dateKey] || [];
-      if (sessions.length === 0) {
-        return;
-      }
-
-      const item = document.createElement("div");
-      item.className = "session-chip";
-      item.innerHTML = `<strong>${label} ${formatDateLabel(dateKey)}</strong><span>${sessions
-        .map((session) => session.label)
-        .join(", ")}</span>`;
-      selectedWeekSessions.appendChild(item);
+  adminConfig.presetSlots.forEach(([start, end]) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "preset-button";
+    button.innerHTML = `
+      <span class="preset-title">${createSessionLabel(start, end)}</span>
+      <span class="preset-subtitle">Add to selected days</span>
+    `;
+    button.addEventListener("click", () => {
+      void addSessionToSelectedDays({
+        start,
+        end,
+        label: createSessionLabel(start, end),
+      });
     });
-  } catch (error) {
+    presetGrid.appendChild(button);
+  });
+}
+
+function getSelectedDates() {
+  return getWeekDates()
+    .filter(({ key }) => selectedWeekdays.has(key))
+    .map(({ dateKey }) => dateKey);
+}
+
+function renderSelectedSummary() {
+  const selectedDates = getSelectedDates();
+
+  if (selectedDates.length === 0) {
     selectedWeekSessions.innerHTML =
-      '<div class="empty-state">Could not load this week. Check your setup and try again.</div>';
+      '<div class="empty-state">No days selected. Tap the day cards above to choose where you want to post availability.</div>';
+    return;
   }
+
+  selectedWeekSessions.innerHTML = `
+    <div class="selection-pill">
+      <strong>${selectedDates.length} day${selectedDates.length === 1 ? "" : "s"} selected</strong>
+      <span>${selectedDates
+        .map((dateKey) => formatDateLabel(dateKey))
+        .join(" • ")}</span>
+    </div>
+  `;
 }
 
 async function renderWeekSchedule() {
@@ -154,32 +225,100 @@ async function renderWeekSchedule() {
 
     if (!weekHasSessions) {
       weekScheduleList.innerHTML =
-        '<div class="empty-state">No availability posted for this week yet.</div>';
+        '<div class="empty-state">Nothing posted for this week yet. Select days on the left and tap one of your quick slots.</div>';
       return;
     }
 
-    weekDates.forEach(({ dateKey }) => {
+    weekDates.forEach(({ dateKey, fullLabel }) => {
       const sessions = schedule[dateKey] || [];
-      if (sessions.length === 0) {
-        return;
-      }
-
       const item = document.createElement("div");
       item.className = "week-day";
 
       const details = document.createElement("div");
-      const sessionLabels = sessions.map((session) => session.label).join(", ");
-      details.innerHTML = `<strong>${formatDateLabel(dateKey)}</strong><br />${sessionLabels}`;
+      details.className = "week-day-details";
+
+      const heading = document.createElement("div");
+      heading.className = "week-day-heading";
+      heading.innerHTML = `<strong>${fullLabel}</strong><span>${
+        sessions.length === 0
+          ? "No availability posted"
+          : `${sessions.length} open slot${sessions.length === 1 ? "" : "s"}`
+      }</span>`;
+      details.appendChild(heading);
+
+      if (sessions.length > 0) {
+        const sessionList = document.createElement("div");
+        sessionList.className = "slot-checklist";
+
+        sessions.forEach((session) => {
+          const label = document.createElement("label");
+          label.className = "slot-check-item";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.className = "slot-check-input";
+          checkbox.addEventListener("change", async () => {
+            checkbox.disabled = true;
+            try {
+              await window.scheduleStore.clearSlot(
+                dateKey,
+                {
+                  start: session.start,
+                  end: session.end,
+                  label: session.label,
+                },
+                adminSessionPasscode
+              );
+              adminStatus.textContent = `${session.label} removed from ${fullLabel}.`;
+
+              label.remove();
+
+              const remainingSlots = sessionList.querySelectorAll(".slot-check-item").length;
+              heading.querySelector("span").textContent =
+                remainingSlots === 0
+                  ? "No availability posted"
+                  : `${remainingSlots} open slot${remainingSlots === 1 ? "" : "s"}`;
+
+              if (remainingSlots === 0) {
+                const empty = document.createElement("p");
+                empty.className = "day-empty";
+                empty.textContent = "No availability posted.";
+                details.appendChild(empty);
+                sessionList.remove();
+                clearButton.disabled = true;
+              }
+            } catch (error) {
+              checkbox.disabled = false;
+              checkbox.checked = false;
+              adminStatus.textContent =
+                "Could not update that slot. Check your setup and try again.";
+            }
+          });
+
+          const copy = document.createElement("div");
+          copy.className = "slot-check-copy";
+          copy.innerHTML = `<strong>${session.label}</strong><span>Check if this time was taken</span>`;
+
+          label.appendChild(checkbox);
+          label.appendChild(copy);
+          sessionList.appendChild(label);
+        });
+
+        details.appendChild(sessionList);
+      } else {
+        const empty = document.createElement("p");
+        empty.className = "day-empty";
+        empty.textContent = "No availability posted.";
+        details.appendChild(empty);
+      }
 
       const clearButton = document.createElement("button");
       clearButton.type = "button";
       clearButton.className = "mini-button";
-      clearButton.textContent = "Clear";
+      clearButton.textContent = "Clear Day";
+      clearButton.disabled = sessions.length === 0;
       clearButton.addEventListener("click", async () => {
-        await window.scheduleStore.clearDate(dateKey, adminSessionPasscode);
-        adminStatus.textContent = `Cleared ${formatDateLabel(dateKey)}.`;
-        await renderSelectedWeekSessions();
-        await renderWeekSchedule();
+        await clearDates([dateKey], `Cleared ${fullLabel}.`);
       });
 
       item.appendChild(details);
@@ -192,12 +331,38 @@ async function renderWeekSchedule() {
   }
 }
 
-async function addSessionToWeek() {
+async function addSessionToSelectedDays(session) {
+  if (!weekStartInput.value) {
+    adminStatus.textContent = "Choose a week first.";
+    return;
+  }
+
+  const dates = getSelectedDates();
+
+  if (dates.length === 0) {
+    adminStatus.textContent = "Select at least one day first.";
+    return;
+  }
+
+  try {
+    await window.scheduleStore.addSlotsToDates(
+      dates,
+      session,
+      adminSessionPasscode
+    );
+    adminStatus.textContent = `Added ${session.label} to ${dates.length} selected day(s).`;
+    await renderWeekSchedule();
+  } catch (error) {
+    adminStatus.textContent = "Could not save that slot. Check your setup and try again.";
+  }
+}
+
+async function addCustomSession() {
   const start = startTimeInput.value;
   const end = endTimeInput.value;
 
-  if (!weekStartInput.value || !start || !end) {
-    adminStatus.textContent = "Choose a week, start time, and end time first.";
+  if (!start || !end) {
+    adminStatus.textContent = "Choose a start time and end time first.";
     return;
   }
 
@@ -206,40 +371,43 @@ async function addSessionToWeek() {
     return;
   }
 
-  if (selectedWeekdays.size === 0) {
-    adminStatus.textContent = "Choose at least one weekday.";
-    return;
-  }
-
-  const session = {
+  await addSessionToSelectedDays({
     start,
     end,
     label: createSessionLabel(start, end),
-  };
-  const dates = getWeekDates()
-    .filter(({ key }) => selectedWeekdays.has(key))
-    .map(({ dateKey }) => dateKey);
-
-  try {
-    await window.scheduleStore.addSlotsToDates(
-      dates,
-      session,
-      adminSessionPasscode
-    );
-    adminStatus.textContent = `Added ${session.label} to ${dates.length} day(s) this week.`;
-    await renderSelectedWeekSessions();
-    await renderWeekSchedule();
-  } catch (error) {
-    adminStatus.textContent = "Could not save the schedule. Check your setup and try again.";
-  }
+  });
 }
 
-async function clearSelectedWeek() {
-  if (!weekStartInput.value) {
-    adminStatus.textContent = "Choose a week first.";
+async function clearDates(dates, successMessage) {
+  if (dates.length === 0) {
+    adminStatus.textContent = "Select at least one day first.";
     return;
   }
 
+  try {
+    await Promise.all(
+      dates.map((dateKey) =>
+        window.scheduleStore.clearDate(dateKey, adminSessionPasscode)
+      )
+    );
+    adminStatus.textContent = successMessage;
+    await renderWeekSchedule();
+  } catch (error) {
+    adminStatus.textContent = "Could not clear that availability. Try again.";
+  }
+}
+
+async function clearSelectedDays() {
+  const selectedDates = getSelectedDates();
+  await clearDates(
+    selectedDates,
+    `Cleared ${selectedDates.length} selected day${
+      selectedDates.length === 1 ? "" : "s"
+    }.`
+  );
+}
+
+async function clearSelectedWeek() {
   const weekDates = getWeekDates();
   const startDate = weekDates[0].dateKey;
   const endDate = weekDates[weekDates.length - 1].dateKey;
@@ -250,53 +418,19 @@ async function clearSelectedWeek() {
       endDate,
       adminSessionPasscode
     );
-    adminStatus.textContent = "Cleared all availability for this week.";
-    await renderSelectedWeekSessions();
+    adminStatus.textContent = "Cleared the whole week.";
     await renderWeekSchedule();
   } catch (error) {
-    adminStatus.textContent = "Could not clear the week. Check your setup and try again.";
-  }
-}
-
-async function loadSampleWeek() {
-  const sampleSlots = [
-    ["16:00", "17:00"],
-    ["17:30", "18:30"],
-    ["19:00", "20:00"],
-  ];
-  const dates = getWeekDates()
-    .filter(({ key }) => key < 5)
-    .map(({ dateKey }) => dateKey);
-
-  try {
-    for (const [start, end] of sampleSlots) {
-      await window.scheduleStore.addSlotsToDates(
-        dates,
-        {
-          start,
-          end,
-          label: createSessionLabel(start, end),
-        },
-        adminSessionPasscode
-      );
-    }
-
-    adminStatus.textContent = "Sample week loaded. Edit the week as needed.";
-    await renderSelectedWeekSessions();
-    await renderWeekSchedule();
-  } catch (error) {
-    adminStatus.textContent = "Could not load the sample week. Check your setup and try again.";
+    adminStatus.textContent = "Could not clear the week. Try again.";
   }
 }
 
 function initializeAdmin() {
-  weekStartInput.min = getTomorrowDate();
-  weekStartInput.value = getTomorrowDate();
+  weekStartInput.min = getFirstAvailableDate();
   startTimeInput.value = "16:00";
   endTimeInput.value = "17:00";
-  renderWeekdayPicker();
-  void renderSelectedWeekSessions();
-  void renderWeekSchedule();
+  renderPresetGrid();
+  setWeekFromDate(getFirstAvailableDate());
 }
 
 async function unlockAdmin() {
@@ -333,17 +467,40 @@ async function unlockAdmin() {
 }
 
 applyWeekButton.addEventListener("click", () => {
-  void addSessionToWeek();
+  void addCustomSession();
 });
-copyWeekButton.addEventListener("click", () => {
-  void loadSampleWeek();
+clearSelectedButton.addEventListener("click", () => {
+  void clearSelectedDays();
 });
 clearWeekButton.addEventListener("click", () => {
   void clearSelectedWeek();
 });
+weekdaysButton.addEventListener("click", () => {
+  selectedWeekdays = new Set([0, 1, 2, 3, 4]);
+  renderDayPicker();
+  renderSelectedSummary();
+});
+allDaysButton.addEventListener("click", () => {
+  selectedWeekdays = new Set(weekdays.map(({ key }) => key));
+  renderDayPicker();
+  renderSelectedSummary();
+});
+clearSelectionButton.addEventListener("click", () => {
+  selectedWeekdays = new Set();
+  renderDayPicker();
+  renderSelectedSummary();
+});
+prevWeekButton.addEventListener("click", () => {
+  moveWeek(-1);
+});
+todayWeekButton.addEventListener("click", () => {
+  setWeekFromDate(getFirstAvailableDate());
+});
+nextWeekButton.addEventListener("click", () => {
+  moveWeek(1);
+});
 weekStartInput.addEventListener("change", () => {
-  void renderSelectedWeekSessions();
-  void renderWeekSchedule();
+  setWeekFromDate(weekStartInput.value);
 });
 unlockButton.addEventListener("click", unlockAdmin);
 adminPasswordInput.addEventListener("keydown", (event) => {
