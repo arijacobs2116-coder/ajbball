@@ -270,7 +270,23 @@ async function renderWeekSchedule() {
                 adminSessionPasscode
               );
               adminStatus.textContent = `${session.label} removed from ${fullLabel}.`;
-              await renderWeekSchedule();
+
+              label.remove();
+
+              const remainingSlots = sessionList.querySelectorAll(".slot-check-item").length;
+              heading.querySelector("span").textContent =
+                remainingSlots === 0
+                  ? "No availability posted"
+                  : `${remainingSlots} open slot${remainingSlots === 1 ? "" : "s"}`;
+
+              if (remainingSlots === 0) {
+                const empty = document.createElement("p");
+                empty.className = "day-empty";
+                empty.textContent = "No availability posted.";
+                details.appendChild(empty);
+                sessionList.remove();
+                clearButton.disabled = true;
+              }
             } catch (error) {
               checkbox.disabled = false;
               checkbox.checked = false;
