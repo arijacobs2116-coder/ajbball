@@ -596,30 +596,77 @@ textarea {
   gap: 14px;
 }
 
-.weekday-picker {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.week-toolbar,
+.selection-toolbar {
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+  margin: 18px 0 0;
+}
+
+.helper-tight {
+  margin-top: 8px;
+}
+
+.day-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   margin-top: 18px;
 }
 
-.weekday-button {
-  min-height: 48px;
+.day-card {
+  min-height: 108px;
+  padding: 16px;
   border: 1px solid rgba(15, 25, 48, 0.14);
-  border-radius: 16px;
+  border-radius: 20px;
   background: rgba(255, 255, 255, 0.92);
   color: #0f1930;
   font: inherit;
-  font-weight: 800;
+  text-align: left;
   cursor: pointer;
+  display: grid;
+  gap: 4px;
 }
 
-.weekday-button.selected {
+.day-card.selected {
   background: linear-gradient(135deg, #234b77, #17385b);
   color: #fff;
   border-color: transparent;
 }
 
+.day-card-label,
+.preset-subtitle,
+.day-card-meta {
+  font-size: 0.86rem;
+  opacity: 0.78;
+}
+
+.day-card strong,
+.preset-title {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.admin-block {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(15, 25, 48, 0.12);
+}
+
+.section-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+
+.section-row h3 {
+  margin: 4px 0 0;
+}
+
+.preset-grid,
 .session-list,
 .week-list {
   display: grid;
@@ -627,14 +674,47 @@ textarea {
   margin-top: 18px;
 }
 
+.preset-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.preset-button {
+  min-height: 86px;
+  padding: 16px;
+  border: 1px solid rgba(15, 25, 48, 0.14);
+  border-radius: 18px;
+  background: #fff;
+  color: #0f1930;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 6px;
+}
+
+.preset-button:hover,
+.day-card:hover,
+.mini-button:hover {
+  transform: translateY(-1px);
+}
+
+.selection-summary {
+  margin-top: 20px;
+}
+
+.selection-pill,
 .session-chip,
 .week-day {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 12px;
   padding: 14px 16px;
   border-radius: 18px;
+}
+
+.selection-pill {
+  background: rgba(15, 25, 48, 0.08);
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .session-chip {
@@ -648,8 +728,35 @@ textarea {
 }
 
 .week-day strong,
-.session-chip strong {
+.session-chip strong,
+.selection-pill strong {
   font-size: 1rem;
+}
+
+.week-day-details {
+  flex: 1;
+}
+
+.session-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.session-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 700;
+}
+
+.day-empty {
+  margin: 10px 0 0;
+  opacity: 0.75;
 }
 
 .admin-actions {
@@ -674,6 +781,7 @@ textarea {
   cursor: pointer;
   background: rgba(15, 25, 48, 0.1);
   color: inherit;
+  transition: transform 120ms ease, background 120ms ease;
 }
 
 .helper-text {
@@ -832,7 +940,15 @@ textarea {
     max-width: none;
   }
 
-  .weekday-picker {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .day-card-grid,
+  .preset-grid,
+  .field-inline {
+    grid-template-columns: 1fr;
+  }
+
+  .section-row,
+  .week-day {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

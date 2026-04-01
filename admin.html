@@ -43,63 +43,90 @@
 
       <header class="admin-header">
         <p class="eyebrow">Schedule Admin</p>
-        <h1>Post your weekly availability.</h1>
+        <h1>Post your weekly availability fast.</h1>
         <p class="hero-text">
-          Choose a week, add session times to the days you want, and the
-          booking page will automatically show those time blocks to clients.
+          Pick the week, tap the days you want, then drop in your session
+          times. The booking page updates from whatever you post here.
         </p>
       </header>
 
       <section class="admin-grid" id="scheduleEditor">
         <div class="admin-card light">
-          <p class="eyebrow">Weekly Builder</p>
-          <h2>Set availability week by week.</h2>
+          <p class="eyebrow">Quick Builder</p>
+          <h2>Tap days. Add times. Done.</h2>
+
+          <div class="week-toolbar">
+            <button class="mini-button" id="prevWeekButton" type="button">Previous Week</button>
+            <button class="mini-button" id="todayWeekButton" type="button">First Week</button>
+            <button class="mini-button" id="nextWeekButton" type="button">Next Week</button>
+          </div>
 
           <label for="weekStart">Week Of</label>
           <input id="weekStart" type="date" />
+          <p class="helper-text helper-tight" id="weekRangeLabel"></p>
 
-          <div class="weekday-picker" id="weekdayPicker"></div>
-
-          <div class="field-inline">
-            <div>
-              <label for="startTime">Start Time</label>
-              <input id="startTime" type="time" step="1800" />
-            </div>
-            <div>
-              <label for="endTime">End Time</label>
-              <input id="endTime" type="time" step="1800" />
-            </div>
+          <div class="selection-toolbar">
+            <button class="mini-button" id="weekdaysButton" type="button">Select Mon-Fri</button>
+            <button class="mini-button" id="allDaysButton" type="button">Select All 7</button>
+            <button class="mini-button" id="clearSelectionButton" type="button">Clear Selection</button>
           </div>
 
-          <div class="admin-actions">
-            <button class="button button-primary" id="applyWeekButton" type="button">
-              Add To Selected Days
-            </button>
-            <button class="button button-secondary" id="copyWeekButton" type="button">
-              Load Sample Week
-            </button>
-            <button class="button button-danger" id="clearWeekButton" type="button">
-              Clear This Week
-            </button>
+          <div class="day-card-grid" id="weekdayPicker"></div>
+
+          <div class="admin-block">
+            <div class="section-row">
+              <div>
+                <p class="eyebrow">Quick Slots</p>
+                <h3>One tap for your common times.</h3>
+              </div>
+              <p class="helper-text helper-tight">Adds a full 1-hour slot to every selected day.</p>
+            </div>
+            <div class="preset-grid" id="presetGrid"></div>
           </div>
 
-          <p class="helper-text">
-            Example: choose the week, tap Monday and Wednesday, then add
-            `16:00` to `17:00`. Use the same process again for `17:30` to
-            `18:30` if you want a second slot on those days.
-          </p>
+          <div class="admin-block">
+            <div class="section-row">
+              <div>
+                <p class="eyebrow">Custom Slot</p>
+                <h3>Add a different time range.</h3>
+              </div>
+            </div>
+
+            <div class="field-inline">
+              <div>
+                <label for="startTime">Start Time</label>
+                <input id="startTime" type="time" step="1800" />
+              </div>
+              <div>
+                <label for="endTime">End Time</label>
+                <input id="endTime" type="time" step="1800" />
+              </div>
+            </div>
+
+            <div class="admin-actions">
+              <button class="button button-primary" id="applyWeekButton" type="button">
+                Add Custom Slot
+              </button>
+              <button class="button button-danger" id="clearSelectedButton" type="button">
+                Clear Selected Days
+              </button>
+              <button class="button button-secondary" id="clearWeekButton" type="button">
+                Clear Whole Week
+              </button>
+            </div>
+          </div>
 
           <p class="status-text" id="adminStatus"></p>
 
-          <div class="session-list" id="selectedWeekSessions"></div>
+          <div class="selection-summary" id="selectedWeekSessions"></div>
         </div>
 
         <div class="admin-card dark">
           <p class="eyebrow">This Week</p>
-          <h2>Your posted weekly availability.</h2>
+          <h2>Your posted availability.</h2>
           <p class="helper-text">
-            These are the dates and times clients can book from on the main
-            site for the selected week.
+            This is exactly what clients will see for the selected week on the
+            booking page.
           </p>
           <div class="week-list" id="weekScheduleList"></div>
         </div>
