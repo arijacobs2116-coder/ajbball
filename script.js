@@ -1,6 +1,6 @@
 const businessConfig = {
   businessName: "AJ's Basketball Training",
-  phoneNumber: "9732805131",
+  phoneNumber: "9732008228",
   firstAvailableDate: "2026-05-25",
 };
 
