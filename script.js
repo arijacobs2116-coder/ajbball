@@ -1,6 +1,7 @@
 const businessConfig = {
   businessName: "AJ's Basketball Training",
   phoneNumber: "9732805131",
+  firstAvailableDate: "2026-05-25",
 };
 
 const sessionDateInput = document.getElementById("sessionDate");
@@ -87,9 +88,7 @@ async function renderSlots() {
 }
 
 function getTomorrowDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  return date.toISOString().split("T")[0];
+  return businessConfig.firstAvailableDate;
 }
 
 function initializeDateInput() {

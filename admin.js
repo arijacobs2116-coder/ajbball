@@ -1,3 +1,7 @@
+const adminConfig = {
+  firstAvailableDate: "2026-05-25",
+};
+
 const weekdays = [
   { key: 0, label: "Mon" },
   { key: 1, label: "Tue" },
@@ -29,9 +33,7 @@ let selectedWeekdays = new Set([0, 1, 2, 3, 4]);
 let adminSessionPasscode = "";
 
 function getTomorrowDate() {
-  const date = new Date();
-  date.setDate(date.getDate() + 1);
-  return date.toISOString().split("T")[0];
+  return adminConfig.firstAvailableDate;
 }
 
 function formatDateLabel(dateString) {
