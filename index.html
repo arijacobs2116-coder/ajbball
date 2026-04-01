@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AJ's Basketball Training</title>
+    <meta
+      name="description"
+      content="Private basketball training, small group sessions, and skill development with AJ's Basketball Training."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Manrope:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero" id="top">
+      <div class="hero-content">
+        <div class="hero-copy">
+          <p class="eyebrow">Essex County, NJ</p>
+          <h1>AJ's Basketball Training</h1>
+          <p class="hero-location">Summer training bookings and package pricing.</p>
+          <p class="hero-text">
+            Use this page to book sessions, compare training options, and pick
+            the right summer package for your athlete.
+          </p>
+          <p class="hero-trust">
+            4-year varsity starter • 10+ years of basketball experience
+          </p>
+
+          <div class="hero-actions">
+            <a class="button button-primary" href="#booking">Book a Session</a>
+            <a class="button button-secondary" href="tel:9732805131">Call Or Text</a>
+          </div>
+
+          <ul class="hero-points">
+            <li>Summer training packages available</li>
+            <li>1-on-1 and small group sessions</li>
+            <li>Booking requests sent straight to your phone</li>
+          </ul>
+        </div>
+
+        <aside class="hero-card">
+          <p class="card-label">Train With Purpose This Summer</p>
+          <div class="focus-grid">
+            <article>
+              <span>Private Training</span>
+              <strong>1-on-1 sessions designed for real player development</strong>
+            </article>
+            <article>
+              <span>Bundle And Save</span>
+              <strong>Single sessions plus discounted training packages</strong>
+            </article>
+            <article>
+              <span>Simple Booking</span>
+              <strong>Choose a posted time and text your request directly</strong>
+            </article>
+            <article>
+              <span>Call Or Text</span>
+              <strong>973-280-5131</strong>
+            </article>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main>
+      <section class="section section-dark" id="services">
+        <div class="section-heading">
+          <p class="eyebrow">Summer Pricing</p>
+          <h2>Choose a session or package that fits your summer plan.</h2>
+        </div>
+
+        <div class="service-grid">
+          <article class="service-card">
+            <span class="paint-label paint-label-dark">Private Training</span>
+            <h3>1-on-1 Training</h3>
+            <p>
+              One-on-one skill work for athletes who want focused reps,
+              detailed teaching, and steady summer improvement.
+            </p>
+            <strong>$40 / session</strong>
+          </article>
+          <article class="service-card">
+            <span class="paint-label paint-label-dark">Group Training</span>
+            <h3>Small Group Training</h3>
+            <p>
+              Small-group sessions are available by inquiry for families,
+              teammates, or custom summer groups.
+            </p>
+            <strong>Call or text to ask</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-paper">
+        <div class="section-heading">
+          <p class="eyebrow eyebrow-dark">Summer Packages</p>
+          <h2>Built for families booking more than one session.</h2>
+        </div>
+
+        <div class="marketing-grid">
+          <article class="marketing-card">
+            <strong>Single Session</strong>
+            <p>1 private session for focused summer skill work.</p>
+            <span class="marketing-price">$40</span>
+          </article>
+          <article class="marketing-card">
+            <strong>10-Session Bundle</strong>
+            <p>10 private sessions for athletes who want consistent summer progress.</p>
+            <span class="marketing-price">$350</span>
+            <span class="marketing-savings">Save $50</span>
+          </article>
+          <article class="marketing-card">
+            <strong>20-Session Bundle</strong>
+            <p>20 private sessions built for serious summer development.</p>
+            <span class="marketing-price">$650</span>
+            <span class="marketing-savings">Save $150</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="section section-accent" id="booking">
+        <div class="section-heading">
+          <p class="eyebrow">Book a Session</p>
+          <h2>Choose a training type, date, and time.</h2>
+          <p class="section-copy">
+            Select a time slot from the schedule you've posted for that date and
+            send a booking request by text.
+          </p>
+        </div>
+
+        <div class="booking-layout">
+          <div class="booking-panel">
+            <label for="sessionType">Session Type</label>
+            <select id="sessionType" name="sessionType">
+              <option value="1-on-1 Training">1-on-1 Training</option>
+            </select>
+
+            <label for="sessionDate">Preferred Date</label>
+            <input id="sessionDate" name="sessionDate" type="date" />
+
+            <div class="slots-header">
+              <span>Available Time Slots</span>
+              <small id="slotHint">Pick a date to view 60-minute sessions.</small>
+            </div>
+            <div class="slot-grid" id="slotGrid"></div>
+          </div>
+
+          <form class="booking-form" id="bookingForm">
+            <div class="field-row">
+              <label for="clientName">Parent or Athlete Name</label>
+              <input id="clientName" name="clientName" type="text" required />
+            </div>
+
+            <div class="field-row">
+              <label for="phone">Phone</label>
+              <input id="phone" name="phone" type="tel" required />
+            </div>
+
+            <div class="field-row">
+              <label for="ageGroup">Athlete Age / Grade</label>
+              <input id="ageGroup" name="ageGroup" type="text" required />
+            </div>
+
+            <div class="field-row">
+              <label for="goals">Training Goals</label>
+              <textarea
+                id="goals"
+                name="goals"
+                rows="4"
+                placeholder="Handles, shooting, finishing, confidence, tryout prep..."
+              ></textarea>
+            </div>
+
+            <div class="booking-summary" id="bookingSummary">
+              No slot selected yet.
+            </div>
+
+            <button class="button button-primary button-full" type="submit">
+              Send Booking Request
+            </button>
+            <p class="form-note" id="formNote">
+              Requests open a text message draft with the session details.
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer" id="contact">
+      <div>
+        <p class="eyebrow">Contact</p>
+        <h2>AJ's Basketball Training</h2>
+        <p>Phone: <a href="tel:9732805131">(973) 280-5131</a></p>
+      </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="shared-schedule.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

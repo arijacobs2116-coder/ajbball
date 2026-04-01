@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Schedule Admin | AJ's Basketball Training</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Manrope:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <section class="admin-gate" id="adminGate">
+        <div class="admin-gate-card">
+          <p class="eyebrow">Coach Login</p>
+          <h1>Set your availability.</h1>
+          <p class="hero-text">
+            Enter your passcode to open the private schedule manager.
+          </p>
+
+          <label for="adminPassword">Passcode</label>
+          <input id="adminPassword" type="password" autocomplete="off" />
+
+          <button class="button button-primary button-full" id="unlockButton" type="button">
+            Unlock Schedule
+          </button>
+          <p class="status-text" id="gateStatus"></p>
+        </div>
+      </section>
+
+      <section class="admin-content" id="adminContent" hidden>
+      <nav class="nav">
+        <a class="brand" href="index.html">AJ's Basketball Training</a>
+        <div class="nav-links">
+          <a href="index.html">Client Site</a>
+          <a href="#scheduleEditor">Schedule Admin</a>
+        </div>
+      </nav>
+
+      <header class="admin-header">
+        <p class="eyebrow">Schedule Admin</p>
+        <h1>Post your weekly availability.</h1>
+        <p class="hero-text">
+          Choose a week, add session times to the days you want, and the
+          booking page will automatically show those time blocks to clients.
+        </p>
+      </header>
+
+      <section class="admin-grid" id="scheduleEditor">
+        <div class="admin-card light">
+          <p class="eyebrow">Weekly Builder</p>
+          <h2>Set availability week by week.</h2>
+
+          <label for="weekStart">Week Of</label>
+          <input id="weekStart" type="date" />
+
+          <div class="weekday-picker" id="weekdayPicker"></div>
+
+          <div class="field-inline">
+            <div>
+              <label for="startTime">Start Time</label>
+              <input id="startTime" type="time" step="1800" />
+            </div>
+            <div>
+              <label for="endTime">End Time</label>
+              <input id="endTime" type="time" step="1800" />
+            </div>
+          </div>
+
+          <div class="admin-actions">
+            <button class="button button-primary" id="applyWeekButton" type="button">
+              Add To Selected Days
+            </button>
+            <button class="button button-secondary" id="copyWeekButton" type="button">
+              Load Sample Week
+            </button>
+            <button class="button button-danger" id="clearWeekButton" type="button">
+              Clear This Week
+            </button>
+          </div>
+
+          <p class="helper-text">
+            Example: choose the week, tap Monday and Wednesday, then add
+            `16:00` to `17:00`. Use the same process again for `17:30` to
+            `18:30` if you want a second slot on those days.
+          </p>
+
+          <p class="status-text" id="adminStatus"></p>
+
+          <div class="session-list" id="selectedWeekSessions"></div>
+        </div>
+
+        <div class="admin-card dark">
+          <p class="eyebrow">This Week</p>
+          <h2>Your posted weekly availability.</h2>
+          <p class="helper-text">
+            These are the dates and times clients can book from on the main
+            site for the selected week.
+          </p>
+          <div class="week-list" id="weekScheduleList"></div>
+        </div>
+      </section>
+      </section>
+    </main>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="shared-schedule.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>
