@@ -239,6 +239,7 @@ async function renderWeekSchedule() {
 
     weekDates.forEach(({ dateKey, fullLabel }) => {
       const sessions = schedule[dateKey] || [];
+      let currentSessions = [...sessions];
       const item = document.createElement("div");
       item.className = "week-day";
 
@@ -273,7 +274,7 @@ async function renderWeekSchedule() {
           removeButton.addEventListener("click", async () => {
             removeButton.disabled = true;
             try {
-              const remainingSessions = sessions.filter(
+              const remainingSessions = currentSessions.filter(
                 (item) =>
                   !(
                     item.start === session.start &&
@@ -296,6 +297,7 @@ async function renderWeekSchedule() {
                 );
               }
 
+              currentSessions = remainingSessions;
               row.remove();
 
               const remainingCount = sessionList.querySelectorAll(".slot-check-item").length;
