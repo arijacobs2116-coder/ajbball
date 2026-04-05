@@ -14,6 +14,11 @@ const formNote = document.getElementById("formNote");
 
 let selectedSlot = "";
 let slotRenderRequestId = 0;
+let slotRefreshTimer = null;
+
+const slotRefreshConfig = {
+  intervalMs: 15000,
+};
 
 function dedupeSlots(slots) {
   const seen = new Set();
@@ -53,12 +58,16 @@ function updateSummary() {
   `;
 }
 
-async function renderSlots() {
+async function renderSlots(options = {}) {
+  const { preserveSelection = false, silent = false } = options;
   const requestId = ++slotRenderRequestId;
   const dateValue = sessionDateInput.value;
+  const previousSelectedSlot = preserveSelection ? selectedSlot : "";
   slotGrid.innerHTML = "";
   selectedSlot = "";
-  updateSummary();
+  if (!silent || !preserveSelection) {
+    updateSummary();
+  }
 
   if (!dateValue) {
     slotHint.textContent = "Pick a date to view available sessions.";
@@ -89,6 +98,7 @@ async function renderSlots() {
     slotHint.textContent = "No sessions posted for that date.";
     slotGrid.innerHTML =
       '<div class="empty-state">No session times have been posted for this date yet.</div>';
+    updateSummary();
     return;
   }
 
@@ -107,8 +117,33 @@ async function renderSlots() {
       button.classList.add("selected");
       updateSummary();
     });
+
+    if (previousSelectedSlot && slot.label === previousSelectedSlot) {
+      selectedSlot = slot.label;
+      button.classList.add("selected");
+    }
+
     slotGrid.appendChild(button);
   });
+
+  updateSummary();
+}
+
+function startSlotAutoRefresh() {
+  if (slotRefreshTimer) {
+    return;
+  }
+
+  slotRefreshTimer = window.setInterval(() => {
+    if (document.visibilityState !== "visible" || !sessionDateInput.value) {
+      return;
+    }
+
+    void renderSlots({
+      preserveSelection: true,
+      silent: true,
+    });
+  }, slotRefreshConfig.intervalMs);
 }
 
 function getTomorrowDate() {
@@ -120,6 +155,7 @@ function initializeDateInput() {
   sessionDateInput.min = minDate;
   sessionDateInput.value = minDate;
   void renderSlots();
+  startSlotAutoRefresh();
 }
 
 bookingForm.addEventListener("submit", (event) => {
@@ -161,5 +197,11 @@ sessionDateInput.addEventListener("change", () => {
   void renderSlots();
 });
 sessionTypeSelect.addEventListener("change", updateSummary);
+window.addEventListener("focus", () => {
+  void renderSlots({
+    preserveSelection: true,
+    silent: true,
+  });
+});
 
 initializeDateInput();
