@@ -273,15 +273,29 @@ async function renderWeekSchedule() {
           removeButton.addEventListener("click", async () => {
             removeButton.disabled = true;
             try {
-              await window.scheduleStore.clearSlot(
-                dateKey,
-                {
-                  start: session.start,
-                  end: session.end,
-                  label: session.label,
-                },
-                adminSessionPasscode
+              const remainingSessions = sessions.filter(
+                (item) =>
+                  !(
+                    item.start === session.start &&
+                    item.end === session.end &&
+                    item.label === session.label
+                  )
               );
+
+              await window.scheduleStore.clearDate(dateKey, adminSessionPasscode);
+
+              for (const remainingSession of remainingSessions) {
+                await window.scheduleStore.addSlotsToDates(
+                  [dateKey],
+                  {
+                    start: remainingSession.start,
+                    end: remainingSession.end,
+                    label: remainingSession.label,
+                  },
+                  adminSessionPasscode
+                );
+              }
+
               noteRefreshNeeded(`${session.label} removed from ${fullLabel}.`);
             } catch (error) {
               removeButton.disabled = false;
