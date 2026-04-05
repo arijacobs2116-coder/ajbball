@@ -13,7 +13,20 @@ const bookingSummary = document.getElementById("bookingSummary");
 const formNote = document.getElementById("formNote");
 
 let selectedSlot = "";
-let lastRenderedDate = "";
+let slotRenderRequestId = 0;
+
+function dedupeSlots(slots) {
+  const seen = new Set();
+
+  return slots.filter((slot) => {
+    const key = `${slot.start}-${slot.end}-${slot.label}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
 
 function formatDateLabel(dateString) {
   const date = new Date(`${dateString}T12:00:00`);
@@ -41,10 +54,10 @@ function updateSummary() {
 }
 
 async function renderSlots() {
+  const requestId = ++slotRenderRequestId;
   const dateValue = sessionDateInput.value;
   slotGrid.innerHTML = "";
   selectedSlot = "";
-  lastRenderedDate = dateValue;
   updateSummary();
 
   if (!dateValue) {
@@ -57,11 +70,20 @@ async function renderSlots() {
   try {
     slots = await window.scheduleStore.getSlotsForDate(dateValue);
   } catch (error) {
+    if (requestId !== slotRenderRequestId) {
+      return;
+    }
     slotHint.textContent = "Availability could not be loaded.";
     slotGrid.innerHTML =
       '<div class="empty-state">There was a problem loading the schedule. Please try again.</div>';
     return;
   }
+
+  if (requestId !== slotRenderRequestId) {
+    return;
+  }
+
+  slots = dedupeSlots(slots);
 
   if (slots.length === 0) {
     slotHint.textContent = "No sessions posted for that date.";
@@ -87,14 +109,6 @@ async function renderSlots() {
     });
     slotGrid.appendChild(button);
   });
-}
-
-function refreshSlotsIfNeeded() {
-  if (!sessionDateInput.value) {
-    return;
-  }
-
-  void renderSlots();
 }
 
 function getTomorrowDate() {
@@ -147,11 +161,5 @@ sessionDateInput.addEventListener("change", () => {
   void renderSlots();
 });
 sessionTypeSelect.addEventListener("change", updateSummary);
-window.addEventListener("focus", refreshSlotsIfNeeded);
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    refreshSlotsIfNeeded();
-  }
-});
 
 initializeDateInput();

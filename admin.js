@@ -43,11 +43,16 @@ const clearSelectedButton = document.getElementById("clearSelectedButton");
 const clearWeekButton = document.getElementById("clearWeekButton");
 const selectedWeekSessions = document.getElementById("selectedWeekSessions");
 const weekScheduleList = document.getElementById("weekScheduleList");
+const refreshWeekButton = document.getElementById("refreshWeekButton");
 const adminStatus = document.getElementById("adminStatus");
 
 let isUnlocked = false;
 let selectedWeekdays = new Set([0, 1, 2, 3, 4]);
 let adminSessionPasscode = "";
+
+function noteRefreshNeeded(message) {
+  adminStatus.textContent = `${message} Press Update Availability when you want to reload the posted view.`;
+}
 
 function getFirstAvailableDate() {
   return adminConfig.firstAvailableDate;
@@ -277,24 +282,7 @@ async function renderWeekSchedule() {
                 },
                 adminSessionPasscode
               );
-              adminStatus.textContent = `${session.label} removed from ${fullLabel}.`;
-
-              row.remove();
-
-              const remainingSlots = sessionList.querySelectorAll(".slot-check-item").length;
-              heading.querySelector("span").textContent =
-                remainingSlots === 0
-                  ? "No availability posted"
-                  : `${remainingSlots} open slot${remainingSlots === 1 ? "" : "s"}`;
-
-              if (remainingSlots === 0) {
-                const empty = document.createElement("p");
-                empty.className = "day-empty";
-                empty.textContent = "No availability posted.";
-                details.appendChild(empty);
-                sessionList.remove();
-                clearButton.disabled = true;
-              }
+              noteRefreshNeeded(`${session.label} removed from ${fullLabel}.`);
             } catch (error) {
               removeButton.disabled = false;
               adminStatus.textContent =
@@ -353,8 +341,9 @@ async function addSessionToSelectedDays(session) {
       session,
       adminSessionPasscode
     );
-    adminStatus.textContent = `Added ${session.label} to ${dates.length} selected day(s).`;
-    await renderWeekSchedule();
+    noteRefreshNeeded(
+      `Added ${session.label} to ${dates.length} selected day(s).`
+    );
   } catch (error) {
     adminStatus.textContent = "Could not save that slot. Check your setup and try again.";
   }
@@ -393,8 +382,7 @@ async function clearDates(dates, successMessage) {
         window.scheduleStore.clearDate(dateKey, adminSessionPasscode)
       )
     );
-    adminStatus.textContent = successMessage;
-    await renderWeekSchedule();
+    noteRefreshNeeded(successMessage);
   } catch (error) {
     adminStatus.textContent = "Could not clear that availability. Try again.";
   }
@@ -421,8 +409,7 @@ async function clearSelectedWeek() {
       endDate,
       adminSessionPasscode
     );
-    adminStatus.textContent = "Cleared the whole week.";
-    await renderWeekSchedule();
+    noteRefreshNeeded("Cleared the whole week.");
   } catch (error) {
     adminStatus.textContent = "Could not clear the week. Try again.";
   }
@@ -430,8 +417,8 @@ async function clearSelectedWeek() {
 
 function initializeAdmin() {
   weekStartInput.min = getFirstAvailableDate();
-  startTimeInput.value = "16:00";
-  endTimeInput.value = "17:00";
+  startTimeInput.value = "10:00";
+  endTimeInput.value = "11:00";
   renderPresetGrid();
   setWeekFromDate(getFirstAvailableDate());
 }
@@ -477,6 +464,9 @@ clearSelectedButton.addEventListener("click", () => {
 });
 clearWeekButton.addEventListener("click", () => {
   void clearSelectedWeek();
+});
+refreshWeekButton.addEventListener("click", () => {
+  void renderWeekSchedule();
 });
 weekdaysButton.addEventListener("click", () => {
   selectedWeekdays = new Set([0, 1, 2, 3, 4]);
