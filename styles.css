@@ -758,20 +758,12 @@ textarea {
 
 .slot-check-item {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr auto;
   gap: 12px;
-  align-items: start;
+  align-items: center;
   padding: 12px 14px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.08);
-}
-
-.slot-check-input {
-  width: 18px;
-  height: 18px;
-  margin-top: 3px;
-  accent-color: #f59a1b;
-  cursor: pointer;
 }
 
 .slot-check-copy {
@@ -782,6 +774,17 @@ textarea {
 .slot-check-copy span {
   opacity: 0.74;
   font-size: 0.9rem;
+}
+
+.slot-remove-button {
+  min-width: 88px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.slot-remove-button:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .day-empty {
@@ -983,6 +986,6 @@ textarea {
   }
 
   .slot-check-item {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 1fr;
   }
 }

@@ -1,10 +1,13 @@
 const adminConfig = {
   firstAvailableDate: "2026-05-25",
   presetSlots: [
+    ["10:00", "11:00"],
+    ["11:30", "12:30"],
+    ["13:00", "14:00"],
+    ["14:30", "15:30"],
     ["16:00", "17:00"],
     ["17:30", "18:30"],
     ["19:00", "20:00"],
-    ["20:30", "21:30"],
   ],
 };
 
@@ -251,14 +254,19 @@ async function renderWeekSchedule() {
         sessionList.className = "slot-checklist";
 
         sessions.forEach((session) => {
-          const label = document.createElement("label");
-          label.className = "slot-check-item";
+          const row = document.createElement("div");
+          row.className = "slot-check-item";
 
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.className = "slot-check-input";
-          checkbox.addEventListener("change", async () => {
-            checkbox.disabled = true;
+          const copy = document.createElement("div");
+          copy.className = "slot-check-copy";
+          copy.innerHTML = `<strong>${session.label}</strong><span>Remove this one time slot only</span>`;
+
+          const removeButton = document.createElement("button");
+          removeButton.type = "button";
+          removeButton.className = "mini-button slot-remove-button";
+          removeButton.textContent = "Remove";
+          removeButton.addEventListener("click", async () => {
+            removeButton.disabled = true;
             try {
               await window.scheduleStore.clearSlot(
                 dateKey,
@@ -271,7 +279,7 @@ async function renderWeekSchedule() {
               );
               adminStatus.textContent = `${session.label} removed from ${fullLabel}.`;
 
-              label.remove();
+              row.remove();
 
               const remainingSlots = sessionList.querySelectorAll(".slot-check-item").length;
               heading.querySelector("span").textContent =
@@ -288,20 +296,15 @@ async function renderWeekSchedule() {
                 clearButton.disabled = true;
               }
             } catch (error) {
-              checkbox.disabled = false;
-              checkbox.checked = false;
+              removeButton.disabled = false;
               adminStatus.textContent =
                 "Could not update that slot. Check your setup and try again.";
             }
           });
 
-          const copy = document.createElement("div");
-          copy.className = "slot-check-copy";
-          copy.innerHTML = `<strong>${session.label}</strong><span>Check if this time was taken</span>`;
-
-          label.appendChild(checkbox);
-          label.appendChild(copy);
-          sessionList.appendChild(label);
+          row.appendChild(copy);
+          row.appendChild(removeButton);
+          sessionList.appendChild(row);
         });
 
         details.appendChild(sessionList);
