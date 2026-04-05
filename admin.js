@@ -296,6 +296,23 @@ async function renderWeekSchedule() {
                 );
               }
 
+              row.remove();
+
+              const remainingCount = sessionList.querySelectorAll(".slot-check-item").length;
+              heading.querySelector("span").textContent =
+                remainingCount === 0
+                  ? "No availability posted"
+                  : `${remainingCount} open slot${remainingCount === 1 ? "" : "s"}`;
+
+              if (remainingCount === 0) {
+                sessionList.remove();
+                const empty = document.createElement("p");
+                empty.className = "day-empty";
+                empty.textContent = "No availability posted.";
+                details.appendChild(empty);
+                clearButton.disabled = true;
+              }
+
               noteRefreshNeeded(`${session.label} removed from ${fullLabel}.`);
             } catch (error) {
               removeButton.disabled = false;
