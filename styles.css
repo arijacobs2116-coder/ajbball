@@ -190,6 +190,16 @@ h1 {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.button-accent {
+  background: linear-gradient(135deg, #ffb15f, #ff7a00);
+  color: #10213d;
+  box-shadow: 0 14px 32px rgba(255, 122, 0, 0.28);
+}
+
+.button-accent:hover {
+  background: linear-gradient(135deg, #ffc483, #ff8c1a);
+}
+
 .button-full {
   width: 100%;
   border: none;
@@ -366,6 +376,8 @@ h2 {
 }
 
 .marketing-card {
+  display: flex;
+  flex-direction: column;
   border-radius: 24px;
   padding: 24px;
   background: #ffffff;
@@ -407,6 +419,21 @@ h2 {
   margin: 0;
   color: rgba(15, 25, 48, 0.8);
   line-height: 1.7;
+}
+
+.button-package {
+  background: linear-gradient(135deg, #234b77, #17385b);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(23, 56, 91, 0.18);
+}
+
+.button-package:hover {
+  background: linear-gradient(135deg, #2b5b90, #1d4670);
+}
+
+.marketing-cta {
+  margin-top: 20px;
+  align-self: flex-start;
 }
 
 .booking-layout {
@@ -925,6 +952,10 @@ textarea {
 
   .button {
     width: 100%;
+  }
+
+  .marketing-cta {
+    align-self: stretch;
   }
 
   .hero-points {
